@@ -1,0 +1,8 @@
+C:\Users\Rishit Keshari\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.1.0)/charset_normalizer (3.4.1) doesn't match a supported version!
+  warnings.warn(
+
+--- Testing /analyze ---
+Error: 500, Internal Server Error
+
+--- Testing /optimize ---
+Error: 500, {"detail":"LLM optimization failed: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}"}
