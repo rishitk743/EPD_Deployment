@@ -47,16 +47,18 @@ async def startup():
     init_db()
 
 # Static allowed origins
+_frontend_url = os.getenv("FRONTEND_URL")
 ALLOWED_ORIGINS = [
-    os.getenv("FRONTEND_URL", "http://localhost:5173"),
-    "http://localhost:5173",  # local dev
-    "http://localhost:3000",  # alt local dev
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]
+if _frontend_url:
+    ALLOWED_ORIGINS.append(_frontend_url.rstrip("/"))
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # Vercel previews
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
