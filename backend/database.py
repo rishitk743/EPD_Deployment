@@ -1,36 +1,47 @@
-import sqlite3
+import os
+import psycopg2
+from psycopg2 import pool
+from psycopg2.extras import RealDictCursor
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "history.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-def get_connection():
-    return sqlite3.connect(DB_PATH)
+# Pool: min 2 connections, max 10
+connection_pool = None
 
 def init_db():
+    global connection_pool
+    if connection_pool is None:
+        if not DATABASE_URL:
+            # Fallback for local dev if DATABASE_URL is not set
+            # This is just to prevent immediate crash if env is missing
+            print("WARNING: DATABASE_URL not set. Database operations will fail.")
+            return
+        connection_pool = pool.SimpleConnectionPool(2, 10, DATABASE_URL)
+    
     conn = get_connection()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS history (
+                id SERIAL PRIMARY KEY,
+                user_id TEXT,
+                resume_text TEXT,
+                job_description TEXT,
+                optimized_resume TEXT,
+                ats_score INTEGER,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        conn.commit()
+    finally:
+        put_connection(conn)
 
-    # Initial table creation
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS history (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        resume_text TEXT,
-        job_description TEXT,
-        optimized_resume TEXT,
-        ats_score INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
+def get_connection():
+    if connection_pool is None:
+        init_db()
+    return connection_pool.getconn()
 
-    # Migration: Add user_id column if it doesn't exist
-    cursor.execute("PRAGMA table_info(history)")
-    columns = [row[1] for row in cursor.fetchall()]
-    if "user_id" not in columns:
-        try:
-            cursor.execute("ALTER TABLE history ADD COLUMN user_id TEXT")
-        except sqlite3.OperationalError:
-            pass
-
-    conn.commit()
-    conn.close()
+def put_connection(conn):
+    if connection_pool is not None:
+        connection_pool.putconn(conn)

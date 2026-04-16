@@ -2,7 +2,7 @@
  * Centralized API client wrapper for the Smart Resume Builder backend
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8003';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export interface UploadResumeResponse {
   resume_text: string;

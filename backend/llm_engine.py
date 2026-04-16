@@ -9,10 +9,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def _get_client() -> Groq:
-    # Per user: OPENAI_AI_KEY in .env is actually a Groq key
-    api_key = os.getenv("OPENAI_AI_KEY") or os.getenv("GROQ_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise RuntimeError("OPENAI_AI_KEY (Groq Key) is not set in .env")
+        raise RuntimeError("GROQ_API_KEY is not set")
     return Groq(api_key=api_key)
 
 JSON_SCHEMA = {

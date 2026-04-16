@@ -47,3 +47,19 @@ class GenerateRequest(BaseModel):
 class GeneratePdfRequest(BaseModel):
     structured_resume: Dict[str, Any] = Field(..., description="Structured resume data for PDF generation")
 
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str
+    user_id: Optional[str] = None
+
+class ChatAction(BaseModel):
+    type: str  # "analysis_result", "optimization_result", "download_ready", "request_upload", "request_jd"
+    data: Optional[Dict[str, Any]] = None
+
+class ChatResponse(BaseModel):
+    reply: str                          # AI's text response
+    transcript: Optional[str] = None    # STT result (voice mode only)
+    audio_base64: Optional[str] = None  # Base64 WAV (voice mode only)
+    action: Optional[ChatAction] = None # Structured action for frontend
+

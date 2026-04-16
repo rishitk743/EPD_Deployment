@@ -32,8 +32,7 @@ def _split_lines(text: str) -> List[str]:
     return [line for line in lines if line.strip()]
 
 
-def generate_docx_from_resume_text(optimized_resume: str, output_dir: str | os.PathLike[str]) -> str:
-    output_path = Path(output_dir).joinpath("optimized_resume.docx")
+def generate_docx_from_resume_text(optimized_resume: str, output_path: str | os.PathLike[str]) -> str:
     document = Document()
     _ensure_styles(document)
 

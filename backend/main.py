@@ -1,17 +1,21 @@
 from __future__ import annotations
 import os
 import random
+import tempfile
+import re
 from pathlib import Path
 from typing import Annotated, List, Dict, Any, Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 from pydantic import BaseModel
+from psycopg2.extras import RealDictCursor
 
-from .database import init_db, get_connection
-from . import ats_engine, parser, resume_generator, pdf_generator, llm_engine
+from .database import init_db, get_connection, put_connection
+from . import ats_engine, parser, resume_generator, pdf_generator, llm_engine, voice_engine, rag_engine
+from .chat_session import session_store
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from .models import (
@@ -22,6 +26,9 @@ from .models import (
     OptimizeRequest,
     OptimizeResponse,
     UploadResumeResponse,
+    ChatRequest,
+    ChatResponse,
+    ChatAction,
 )
 from dotenv import load_dotenv
 
@@ -35,11 +42,21 @@ app = FastAPI(
     version="1.0.0",
 )
 
-init_db()
+@app.on_event("startup")
+async def startup():
+    init_db()
+
+# Static allowed origins
+ALLOWED_ORIGINS = [
+    os.getenv("FRONTEND_URL", "http://localhost:5173"),
+    "http://localhost:5173",  # local dev
+    "http://localhost:3000",  # alt local dev
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Vercel previews
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -98,41 +115,30 @@ async def analyze_resume(payload: AnalyzeRequest):
 async def optimize_resume(request: OptimizeRequest):
     try:
         print(f"--- Optimization Request Started ---")
-        # 1. Optimize with LLM
-        print(f"Step 1: Calling LLM engine for optimization...")
         structured_resume = llm_engine.optimize_resume_with_llm(
             request.resume_text,
             request.job_description,
             request.missing_keywords
         )
-        print(f"Step 2: Successfully received structured resume from LLM.")
-        
-        # 2. Convert to text for backward compatibility
-        print(f"Step 3: Converting structured data to text...")
         optimized_text = llm_engine.structured_resume_to_text(structured_resume)
-        
-        # 3. Compute real post-optimization ATS score
-        print(f"Step 4: Computing post-optimization ATS score...")
         res = ats_engine.compute_ats_score(optimized_text, request.job_description)
-        print(f"Step 5: Score computed: {res['ats_score']}%")
 
-        # 4. Save to database
-        print(f"Step 6: Saving to database...")
         conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO history (user_id, resume_text, job_description, optimized_resume, ats_score)
-            VALUES (?, ?, ?, ?, ?)
-        """, (
-            request.user_id,
-            request.resume_text,
-            request.job_description,
-            optimized_text,
-            res["ats_score"]
-        ))
-        conn.commit()
-        conn.close()
-        print(f"Step 7: Optimization complete.")
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO history (user_id, resume_text, job_description, optimized_resume, ats_score)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (
+                request.user_id,
+                request.resume_text,
+                request.job_description,
+                optimized_text,
+                res["ats_score"]
+            ))
+            conn.commit()
+        finally:
+            put_connection(conn)
 
         return OptimizeResponse(
             optimized_resume=optimized_text,
@@ -141,21 +147,22 @@ async def optimize_resume(request: OptimizeRequest):
             category_scores=res["category_scores"]
         )
     except Exception as e:
-        print(f"CRITICAL ERROR in /optimize: {type(e).__name__} - {str(e)}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/generate")
-async def generate_resume_file(payload: GenerateRequest):
+async def generate_resume_file(payload: GenerateRequest, background_tasks: BackgroundTasks):
     if not payload.optimized_resume.strip():
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Optimized resume text cannot be empty.")
 
     try:
-        output_path = resume_generator.generate_docx_from_resume_text(
+        # Create temp file
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
+            output_path = tmp.name
+        
+        resume_generator.generate_docx_from_resume_text(
             optimized_resume=payload.optimized_resume,
-            output_dir=BASE_DIR,
+            output_path=output_path,
         )
     except Exception as exc: 
         raise HTTPException(
@@ -166,17 +173,22 @@ async def generate_resume_file(payload: GenerateRequest):
     if not os.path.exists(output_path):
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to generate resume file.")
 
+    background_tasks.add_task(os.remove, output_path)
+    
     return FileResponse(
         output_path,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        filename=os.path.basename(output_path),
+        filename="optimized_resume.docx",
     )
 
 
 @app.post("/generate-pdf")
-async def generate_pdf_resume(payload: GeneratePdfRequest):
+async def generate_pdf_resume(payload: GeneratePdfRequest, background_tasks: BackgroundTasks):
     try:
-        output_path = BASE_DIR / "optimized_resume.pdf"
+        # Create temp file
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            output_path = Path(tmp.name)
+            
         pdf_generator.generate_pdf_from_structured_resume(
             data=payload.structured_resume,
             output_path=output_path
@@ -190,8 +202,10 @@ async def generate_pdf_resume(payload: GeneratePdfRequest):
     if not os.path.exists(output_path):
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to generate PDF file.")
 
+    background_tasks.add_task(os.remove, str(output_path))
+    
     return FileResponse(
-        output_path,
+        str(output_path),
         media_type="application/pdf",
         filename="optimized_resume.pdf",
     )
@@ -199,38 +213,28 @@ async def generate_pdf_resume(payload: GeneratePdfRequest):
 @app.get("/history")
 def get_history(user_id: Optional[str] = None):
     conn = get_connection()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    if user_id:
-        cursor.execute("""
-        SELECT id, resume_text, job_description, optimized_resume, ats_score, created_at
-        FROM history
-        WHERE user_id = ?
-        ORDER BY created_at DESC
-        """, (user_id,))
-    else:
-        cursor.execute("""
-        SELECT id, resume_text, job_description, optimized_resume, ats_score, created_at
-        FROM history
-        WHERE user_id IS NULL
-        ORDER BY created_at DESC
-        """)
+        if user_id:
+            cursor.execute("""
+            SELECT id, resume_text, job_description, optimized_resume, ats_score, created_at
+            FROM history
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            """, (user_id,))
+        else:
+            cursor.execute("""
+            SELECT id, resume_text, job_description, optimized_resume, ats_score, created_at
+            FROM history
+            WHERE user_id IS NULL
+            ORDER BY created_at DESC
+            """)
 
-    rows = cursor.fetchall()
-    conn.close()
-
-    history = []
-    for row in rows:
-        history.append({
-            "id": row[0],
-            "resume_text": row[1],
-            "job_description": row[2],
-            "optimized_resume": row[3],
-            "ats_score": row[4],
-            "created_at": row[5],
-        })
-
-    return history
+        history = cursor.fetchall()
+        return history
+    finally:
+        put_connection(conn)
 
 class GoogleAuthRequest(BaseModel):
     credential: str
@@ -238,14 +242,11 @@ class GoogleAuthRequest(BaseModel):
 @app.post("/auth/google")
 async def google_auth(payload: GoogleAuthRequest):
     try:
-        # Verify the ID token
         idinfo = id_token.verify_oauth2_token(
             payload.credential, 
             google_requests.Request(), 
-            os.getenv("GOOGLE_CLIENT_ID")
+            os.getenv("VITE_GOOGLE_CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
         )
-
-        # ID token is valid. Get the user's Google ID from the decoded token.
         userid = idinfo['sub']
         email = idinfo['email']
         name = idinfo.get('name', '')
@@ -259,8 +260,75 @@ async def google_auth(payload: GoogleAuthRequest):
             "status": "success"
         }
     except ValueError:
-        # Invalid token
         raise HTTPException(status_code=401, detail="Invalid Google token")
+
+# --- Chat and Voice Endpoints ---
+
+@app.post("/chat/voice", response_model=ChatResponse)
+async def chat_voice(audio: UploadFile, session_id: str = Form(...)):
+    """Full voice pipeline: audio in → STT → RAG → LLM → TTS → audio out."""
+    try:
+        session = await session_store.get_session(session_id)
+        audio_bytes = await audio.read()
+        transcript = await voice_engine.speech_to_text(audio_bytes, filename=audio.filename)
+        
+        if not transcript:
+            return ChatResponse(reply="I couldn't hear you clearly. Could you say that again?")
+
+        result = await rag_engine.process_chat_message(session, transcript)
+        
+        reply_text = result["reply"]
+        audio_response_bytes = await voice_engine.text_to_speech(reply_text)
+        audio_base64 = voice_engine.audio_to_base64(audio_response_bytes) if audio_response_bytes else None
+
+        return ChatResponse(
+            reply=reply_text,
+            transcript=transcript,
+            audio_base64=audio_base64,
+            action=result["action"]
+        )
+    except Exception as e:
+        print(f"Chat Voice Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_text(payload: ChatRequest):
+    """Text-only chat endpoint."""
+    try:
+        session = await session_store.get_session(payload.session_id)
+        result = await rag_engine.process_chat_message(session, payload.message)
+        
+        return ChatResponse(
+            reply=result["reply"],
+            transcript=None,
+            audio_base64=None,
+            action=result["action"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/chat/upload", response_model=ChatResponse)
+async def chat_upload(file: UploadFile, session_id: str = Form(...)):
+    """Upload resume within a chat session."""
+    try:
+        session = await session_store.get_session(session_id)
+        filename = file.filename.lower()
+        data = await file.read()
+        
+        if filename.endswith(".pdf"):
+            resume_text = parser.parse_pdf(data)
+        else:
+            resume_text = parser.parse_docx(data)
+            
+        session.resume_text = resume_text
+        session.add_message("assistant", f"I've received your resume ({file.filename}). What would you like me to do with it?")
+        
+        return ChatResponse(
+            reply=f"I've received your resume file. I'm ready to analyze it or help you optimize it.",
+            action=ChatAction(type="upload_success", data={"filename": file.filename, "text": resume_text})
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process file: {str(e)}")
 
 @app.get("/health")
 async def health_check():

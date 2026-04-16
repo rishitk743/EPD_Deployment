@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Upload, FileText, CheckCircle, XCircle, Lightbulb, Sparkles, Target,
   ChevronDown, ChevronUp, BarChart, AlertCircle, Info
 } from 'lucide-react';
 import { apiClient, AnalyzeResponse } from '../../services/api';
+import { voiceEvents } from '../lib/voiceEvents';
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -16,6 +17,34 @@ export function Dashboard() {
   const [analysisResults, setAnalysisResults] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resumeText, setResumeText] = useState<string>('');
+
+  // Voice Event Integration
+  useEffect(() => {
+    const unsubscribe = voiceEvents.subscribe((event) => {
+      if (event.type === 'voice-analysis-complete' && event.data) {
+        setAnalysisResults(event.data);
+        setHasAnalyzed(true);
+      }
+
+      if (event.type === 'voice-resume-updated' && event.data) {
+        setResumeText(event.data.text || '');
+        if (event.data.filename) {
+          // Create a dummy file object for UI display
+          setSelectedFile(new File([], event.data.filename, { type: 'application/pdf' }));
+        }
+      }
+
+      if (event.type === 'voice-upload-trigger') {
+        document.getElementById('resume-upload')?.click();
+      }
+
+      if (event.type === 'voice-optimize-trigger') {
+        handleAnalyze(); // Or direct navigation
+      }
+    });
+
+    return unsubscribe;
+  }, [resumeText, jobDescription]); // Keep dependencies updated
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

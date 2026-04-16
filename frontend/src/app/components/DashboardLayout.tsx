@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router";
-import { FileText, Target, History, Settings, HelpCircle, User, LogOut } from "lucide-react";
+import { FileText, Target, History, Settings, HelpCircle, User, LogOut, Mic } from "lucide-react";
 import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import { apiClient } from "../../services/api";
+import { VoiceChatbot } from "./VoiceChatbot";
 
 const navItems = [
   { path: "/", label: "Analyze Resume", icon: FileText },
   { path: "/optimize", label: "Optimize Resume", icon: Target },
   { path: "/history", label: "History", icon: History },
   { path: "/settings", label: "Settings", icon: Settings },
+  { path: "#", label: "Voice Assistant", icon: Mic }, 
 ];
 
 export function DashboardLayout() {
@@ -98,8 +100,14 @@ export function DashboardLayout() {
               const isActive = location.pathname === item.path;
               return (
                 <Link
-                  key={item.path}
+                  key={item.label}
                   to={item.path}
+                  onClick={(e) => {
+                    if (item.label === "Voice Assistant") {
+                      e.preventDefault();
+                      // The VoiceChatbot FAB is already available, but we could trigger it here too
+                    }
+                  }}
                   className={`flex items-center gap-3 px-6 py-3 transition-all duration-200 relative ${
                     isActive
                       ? "bg-[#14B8A6] text-white"
@@ -129,6 +137,8 @@ export function DashboardLayout() {
           </div>
         </main>
       </div>
+
+      <VoiceChatbot />
     </div>
   );
 }
