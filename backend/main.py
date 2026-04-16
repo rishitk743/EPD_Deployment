@@ -64,6 +64,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Smart Resume Builder API is running!"}
+
 
 @app.post("/upload-resume", response_model=UploadResumeResponse)
 async def upload_resume(file: Annotated[UploadFile, File(...)]):
