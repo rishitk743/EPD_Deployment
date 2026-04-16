@@ -37,8 +37,8 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
-    title="Smart Resume Builder API",
-    description="AI-Powered Smart Resume Builder with ATS Optimization and Job Description Matching",
+    title="A R I S E",
+    description="AI Resume Improvement and Scoring Engine - High-accuracy ATS optimization and scoring engine.",
     version="1.0.0",
 )
 

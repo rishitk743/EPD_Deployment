@@ -62,7 +62,7 @@ export const apiClient = {
     });
 
     if (!response.ok) {
-      throw new Error(`Upload failed: ${response.statusText}`);
+      throw new Error(`Upload failed (Status ${response.status} at ${API_BASE_URL}): ${response.statusText}`);
     }
 
     return response.json();

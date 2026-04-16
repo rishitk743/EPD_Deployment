@@ -15,10 +15,10 @@ def score_content(resume_text: str, jd_text: str | None) -> Dict:
     
     # 1. Action Verbs (20% or 33% if no JD)
     action_verbs = [token for token in doc if token.pos_ == "VERB" and token.is_sent_start]
-    if len(action_verbs) >= 4:
+    if len(action_verbs) >= 3: # Reduced from 4
         score += 20 if jd_text else 33.3
-    elif len(action_verbs) > 0:
-        score += 10 if jd_text else 16.6
+    elif len(action_verbs) >= 1: # Higher floor
+        score += 15 if jd_text else 20.0
         feedback.append("Increase the use of strong action verbs at the beginning of your bullet points.")
     else:
         feedback.append("Use strong action verbs (e.g., 'Developed', 'Managed', 'Executed') to start your sentences.")
@@ -26,10 +26,10 @@ def score_content(resume_text: str, jd_text: str | None) -> Dict:
     # 2. Quantified Achievements (40% or 66% if no JD)
     # Digits, percentages, or dollar amounts
     numbers = re.findall(r'\d+|%', resume_text)
-    if len(numbers) >= 5:
+    if len(numbers) >= 4: # Reduced from 5
         score += 40 if jd_text else 66.7
     elif len(numbers) >= 2:
-        score += 20 if jd_text else 33.3
+        score += 25 if jd_text else 40.0
         feedback.append("Try to quantify more of your achievements with metrics, percentages, or dollar amounts.")
     else:
         feedback.append("Your resume lacks quantified achievements. Use numbers to show the impact of your work.")
@@ -119,12 +119,16 @@ def score_format(resume_text: str) -> Dict:
 
     # 4. Email/Phone presence (Critical for format/contact)
     email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-    phone_pattern = r'\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}'
+    # Broader phone pattern: supports +, (), -, ., space, and varying lengths
+    phone_pattern = r'(\+?\d{1,4}[-.\s]?)?(\(?\d{1,5}\)?[-.\s]?)?\d{1,5}[-.\s]?\d{1,5}[-.\s]?\d{0,9}'
     
     if not re.search(email_pattern, resume_text):
         score -= 25
         feedback.append("CRITICAL: No valid email address found. Recruiters cannot contact you.")
-    if not re.search(phone_pattern, resume_text):
+    
+    phone_match = re.search(phone_pattern, resume_text)
+    # Ensure it looks like a real number (at least 7 digits total)
+    if not phone_match or len(re.sub(r'\D', '', phone_match.group())) < 7:
         score -= 15
         feedback.append("No phone number detected. Professional resumes should include multiple contact methods.")
 
@@ -135,12 +139,12 @@ def score_sections(resume_text: str) -> Dict:
     Checks for presence of standard resume sections.
     """
     standard_sections = {
-        "Summary": [r"\b(summary|objective|profile|about me|professional summary|executive summary)\b"],
-        "Experience": [r"\b(experience|work|employment|history|professional experience|background|professional background|work history)\b"],
-        "Education": [r"\b(education|academic|studies|qualifications|academic background)\b"],
-        "Skills": [r"\b(skills|competencies|expertise|tools|technical skills|personal skills|core competencies)\b"],
-        "Projects": [r"\b(projects|portfolio|achievements|key projects|selected projects)\b"],
-        "Certifications": [r"\b(certifications|certificates|licenses|training|awards)\b"]
+        "Summary": [r"\b(summary|objective|profile|about me|professional summary|executive summary|career objective|professional profile)\b"],
+        "Experience": [r"\b(experience|work|employment|history|professional experience|background|professional background|work history|career history|vocational background)\b"],
+        "Education": [r"\b(education|academic|studies|qualifications|academic background|scholastic background|degrees)\b"],
+        "Skills": [r"\b(skills|competencies|expertise|tools|technical skills|personal skills|core competencies|areas of expertise|technological proficiencies)\b"],
+        "Projects": [r"\b(projects|portfolio|achievements|key projects|selected projects|personal projects|notable projects)\b"],
+        "Certifications": [r"\b(certifications|certificates|licenses|training|awards|honors|accreditations|professional development)\b"]
     }
     
     missing_sections = []

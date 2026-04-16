@@ -48,9 +48,12 @@ def parse_docx(data: bytes) -> str:
 
 def _clean_text(text: str) -> str:
     text = text.replace("\x00", " ")
+    # Replace weird whitespace but keep newlines
     text = re.sub(r"[^\S\r\n]+", " ", text)
+    # Remove whitespace at ends of lines
     text = re.sub(r"[ \t]+(\r?\n)", r"\1", text)
-    text = re.sub(r"[^\x09\x0A\x0D\x20-\x7E]", " ", text)
+    # Keep standard ASCII + common currency/symbols, replace others
+    text = re.sub(r"[^\x09\x0A\x0D\x20-\x7E\u00A0-\u00FF]", " ", text)
     return text.strip()
 
 
@@ -64,7 +67,8 @@ def extract_keywords(text: str) -> List[str]:
     for token in doc:
         if token.is_stop or token.is_punct or token.is_space:
             continue
-        if token.pos_ not in {"NOUN", "PROPN"}:
+        # Capture Nouns, Proper Nouns, and Adjectives (for skills like 'Scalable', 'Distributed')
+        if token.pos_ not in {"NOUN", "PROPN", "ADJ"}:
             continue
         key = token.lemma_.lower().strip()
         if not key or len(key) < 2:
