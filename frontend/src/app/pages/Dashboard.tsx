@@ -111,10 +111,10 @@ export function Dashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <div>
-        <h2 className="text-3xl font-semibold text-[#1F2937] mb-2">Resume Analysis</h2>
-        <p className="text-[#4B5563]">Upload your resume and paste the job description to get your ATS compatibility score</p>
+        <h2 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-1 md:mb-2">Resume Analysis</h2>
+        <p className="text-sm md:text-base text-[#4B5563]">Upload your resume and paste the job description to get your ATS compatibility score</p>
       </div>
 
       {error && (
@@ -123,8 +123,8 @@ export function Dashboard() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
+      <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
           <h3 className="text-lg font-semibold text-[#1F2937] mb-4">Resume Upload</h3>
           <label className="block">
             <input
@@ -136,7 +136,7 @@ export function Dashboard() {
               disabled={isAnalyzing}
             />
             <div
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-[#14B8A6] hover:bg-[#F0FDFA] transition-all duration-200"
+              className="border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-8 text-center cursor-pointer hover:border-[#14B8A6] hover:bg-[#F0FDFA] transition-all duration-200"
             >
               {selectedFile ? (
                 <div className="flex flex-col items-center">
@@ -169,7 +169,7 @@ export function Dashboard() {
           </label>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-[#1F2937]">Job Description</h3>
             <span className="text-xs text-[#4B5563] bg-gray-100 px-2 py-1 rounded">{charCount} characters</span>
@@ -178,7 +178,7 @@ export function Dashboard() {
             value={jobDescription}
             onChange={handleJobDescChange}
             placeholder="Paste the complete job description here..."
-            className="w-full h-56 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14B8A6] focus:border-transparent resize-none text-sm text-[#1F2937] placeholder:text-[#9CA3AF] transition-all duration-200"
+            className="w-full h-40 md:h-56 p-3 md:p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#14B8A6] focus:border-transparent resize-none text-sm text-[#1F2937] placeholder:text-[#9CA3AF] transition-all duration-200"
             disabled={isAnalyzing}
           />
         </div>
@@ -188,7 +188,7 @@ export function Dashboard() {
         <button
           onClick={handleAnalyze}
           disabled={!selectedFile || isAnalyzing}
-          className="px-8 py-3.5 bg-[#0F766E] text-white rounded-lg font-semibold hover:bg-[#0D6259] disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+          className="w-full md:w-auto px-6 md:px-8 py-3 md:py-3.5 bg-[#0F766E] text-white rounded-lg font-semibold hover:bg-[#0D6259] disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm md:text-base"
         >
           <Sparkles className="w-5 h-5" />
           {isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
@@ -196,12 +196,12 @@ export function Dashboard() {
       </div>
 
       {hasAnalyzed && analysisResults && (
-        <div className="space-y-6 mt-12 animate-in fade-in duration-500">
-          <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-md">
-            <div className="grid md:grid-cols-3 gap-8 items-center">
+        <div className="space-y-6 mt-8 md:mt-12 animate-in fade-in duration-500">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-8 shadow-md">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-center">
               <div className="flex flex-col items-center">
-                <div className="relative w-48 h-48 mb-4">
-                  <svg className="w-48 h-48 transform -rotate-90">
+                <div className="relative w-36 h-36 md:w-48 md:h-48 mb-4 mx-auto">
+                  <svg viewBox="0 0 192 192" className="w-full h-full transform -rotate-90">
                     <circle cx="96" cy="96" r="80" stroke="#E5E7EB" strokeWidth="16" fill="none" />
                     <circle
                       cx="96"
@@ -216,8 +216,8 @@ export function Dashboard() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center flex-col">
-                    <span className="text-5xl font-bold text-[#1F2937]">{analysisResults.ats_score.toFixed(1)}%</span>
-                    <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Overall Score</span>
+                    <span className="text-3xl md:text-5xl font-bold text-[#1F2937]">{analysisResults.ats_score.toFixed(1)}%</span>
+                    <span className="text-[10px] md:text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Overall Score</span>
                   </div>
                 </div>
               </div>
@@ -255,8 +255,8 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-[#16A34A]" />
@@ -272,7 +272,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
                   <XCircle className="w-5 h-5 text-[#DC2626]" />
@@ -298,7 +298,7 @@ export function Dashboard() {
                   analysisResults
                 }
               })}
-              className="px-8 py-3.5 bg-[#0F766E] text-white rounded-lg font-semibold hover:bg-[#0D6259] transition-all duration-200 shadow-xl hover:shadow-2xl flex items-center gap-2 transform hover:-translate-y-1"
+              className="w-full md:w-auto px-6 md:px-8 py-3 md:py-3.5 bg-[#0F766E] text-white rounded-lg font-semibold hover:bg-[#0D6259] transition-all duration-200 shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 transform hover:-translate-y-1 text-sm md:text-base"
             >
               <Target className="w-5 h-5" />
               {jobDescription ? 'Optimize Resume for Match' : 'General Resume Optimization'}

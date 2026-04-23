@@ -114,18 +114,18 @@ export function OptimizationPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-semibold text-[#1F2937] mb-2">Resume Optimization</h2>
-          <p className="text-[#4B5563]">Your AI-optimized resume is ready for download in ATS-compliant format</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-1 md:mb-2">Resume Optimization</h2>
+          <p className="text-sm md:text-base text-[#4B5563]">Your AI-optimized resume is ready for download in ATS-compliant format</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
           <button
             onClick={handleRegenerate}
             disabled={isRegenerating || isOptimizing}
-            className="px-5 py-2.5 bg-white border border-gray-300 text-[#1F2937] rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2 transition-all shadow-sm"
+            className="w-full sm:w-auto px-5 py-2.5 bg-white border border-gray-300 text-[#1F2937] rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-sm text-sm"
           >
             <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
             Regenerate
@@ -134,16 +134,17 @@ export function OptimizationPage() {
           <button
             onClick={handleDownloadPdf}
             disabled={!structuredResume || isOptimizing || isDownloadingPdf}
-            className="px-5 py-2.5 bg-[#0F766E] text-white rounded-lg font-medium hover:bg-[#0D6259] disabled:opacity-50 flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
+            className="w-full sm:w-auto px-5 py-2.5 bg-[#0F766E] text-white rounded-lg font-medium hover:bg-[#0D6259] disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
           >
             {isDownloadingPdf ? <Loader className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-            Download PDF (Recommended)
+            <span className="hidden sm:inline">Download PDF (Recommended)</span>
+            <span className="sm:hidden">Download PDF</span>
           </button>
 
           <button
             onClick={handleDownloadDocx}
             disabled={!optimizedResumeText || isOptimizing}
-            className="px-5 py-2.5 bg-teal-50 text-[#0F766E] border border-teal-200 rounded-lg font-medium hover:bg-teal-100 disabled:opacity-50 flex items-center gap-2 transition-all"
+            className="w-full sm:w-auto px-5 py-2.5 bg-teal-50 text-[#0F766E] border border-teal-200 rounded-lg font-medium hover:bg-teal-100 disabled:opacity-50 flex items-center justify-center gap-2 transition-all text-sm"
           >
             <Download className="w-4 h-4" />
             Download DOCX
@@ -172,7 +173,7 @@ export function OptimizationPage() {
       ) : optimizedResumeText ? (
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Comparison Views */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-md">
+          <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 shadow-md">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-gray-400" />
@@ -180,12 +181,12 @@ export function OptimizationPage() {
               </div>
               <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded">Score: {analysisResults?.ats_score}%</span>
             </div>
-            <div className="text-sm text-gray-500 whitespace-pre-wrap overflow-y-auto max-h-[500px] font-mono bg-gray-50 p-4 rounded-lg">
+            <div className="text-xs md:text-sm text-gray-500 whitespace-pre-wrap overflow-y-auto max-h-[300px] md:max-h-[500px] font-mono bg-gray-50 p-3 md:p-4 rounded-lg">
               {resumeText}
             </div>
           </div>
 
-          <div className="bg-white border-2 border-[#14B8A6] rounded-xl p-6 shadow-xl relative">
+          <div className="bg-white border-2 border-[#14B8A6] rounded-xl p-4 md:p-6 shadow-xl relative mt-6 lg:mt-0">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#14B8A6] text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5 uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
               ATS-Optimized Version
@@ -201,7 +202,7 @@ export function OptimizationPage() {
               </span>
             </div>
 
-            <div className="text-sm text-[#1F2937] whitespace-pre-wrap overflow-y-auto max-h-[500px] bg-[#F0FDFA] p-6 rounded-lg leading-relaxed shadow-inner">
+            <div className="text-xs md:text-sm text-[#1F2937] whitespace-pre-wrap overflow-y-auto max-h-[300px] md:max-h-[500px] bg-[#F0FDFA] p-3 md:p-6 rounded-lg leading-relaxed shadow-inner">
               {optimizedResumeText}
             </div>
           </div>
@@ -210,7 +211,7 @@ export function OptimizationPage() {
 
       {/* Post-Optimization Insights */}
       {postOptimizationScores && (
-        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-md">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-8 shadow-md">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 bg-[#F0FDFA] rounded-full flex items-center justify-center">
               <BarChart className="w-6 h-6 text-[#0F766E]" />
@@ -221,7 +222,7 @@ export function OptimizationPage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
             {postOptimizationScores.map((cat) => (
               <div key={cat.label} className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col items-center">
                 <span className="text-xs font-bold text-gray-500 uppercase mb-2">{cat.label}</span>

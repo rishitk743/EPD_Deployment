@@ -33,6 +33,24 @@
   top: 0;
 }
 
+/* Prevent horizontal scrolling on all devices */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Touch-friendly target sizes on mobile */
+@media (max-width: 767px) {
+  button, a, [role="button"], input[type="file"], label {
+    min-height: 44px;
+  }
+
+  /* Ensure inputs are comfortably tappable */
+  input, textarea, select {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+
 /* Screen reader only utility */
 .sr-only {
   position: absolute;

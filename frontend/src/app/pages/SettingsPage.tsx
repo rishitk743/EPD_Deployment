@@ -55,10 +55,10 @@ export function SettingsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h2 className="text-3xl font-semibold text-[#1F2937] mb-2">Settings</h2>
-          <p className="text-[#4B5563]">Manage your account preferences and scoring rules</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-1 md:mb-2">Settings</h2>
+          <p className="text-sm md:text-base text-[#4B5563]">Manage your account preferences and scoring rules</p>
         </div>
         {isSaved && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium animate-in fade-in slide-in-from-top-2">
@@ -71,7 +71,7 @@ export function SettingsPage() {
         {/* Main Settings */}
         <div className="lg:col-span-2 space-y-6">
           {/* Scoring Weights Settings */}
-          <div className="bg-white border-2 border-[#14B8A6] rounded-lg p-6 shadow-md relative overflow-hidden">
+          <div className="bg-white border-2 border-[#14B8A6] rounded-lg p-4 md:p-6 shadow-md relative overflow-hidden">
             <div className="absolute top-0 right-0 p-2">
               <div className={`text-xs font-bold px-2 py-1 rounded ${Math.abs(totalWeight - 100) < 0.1 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                 Total: {totalWeight}%
@@ -128,7 +128,7 @@ export function SettingsPage() {
           </div>
 
           {/* Profile Settings */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
               <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-gray-400" />
@@ -167,7 +167,7 @@ export function SettingsPage() {
 
         {/* Side Panel */}
         <div className="space-y-6">
-          <div className="bg-[#0F766E] text-white rounded-lg p-6 shadow-lg">
+          <div className="bg-[#0F766E] text-white rounded-lg p-4 md:p-6 shadow-lg">
             <h3 className="text-lg font-semibold mb-4">Why adjust weights?</h3>
             <p className="text-sm text-teal-100 leading-relaxed mb-4">
               Different companies and industries prioritize different aspects of a resume.
@@ -188,10 +188,10 @@ export function SettingsPage() {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end pt-6 border-t border-gray-200">
+      <div className="flex justify-end pt-4 md:pt-6 border-t border-gray-200">
         <button
           onClick={saveSettings}
-          className="px-8 py-3 bg-[#0F766E] text-white rounded-lg font-semibold hover:bg-[#0D6259] transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+          className="w-full sm:w-auto px-8 py-3 bg-[#0F766E] text-white rounded-lg font-semibold hover:bg-[#0D6259] transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
         >
           <Save className="w-4 h-4" />
           Save Preferences

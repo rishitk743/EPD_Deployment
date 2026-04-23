@@ -71,10 +71,10 @@ export function VoiceChatbot() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 w-16 h-16 bg-[#14B8A6] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40"
+        className="fixed bottom-4 right-4 md:bottom-8 md:right-8 w-12 h-12 md:w-16 md:h-16 bg-[#14B8A6] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40"
         aria-label="Open Voice Assistant"
       >
-        <Mic className="w-8 h-8" />
+        <Mic className="w-6 h-6 md:w-8 md:h-8" />
       </button>
 
       <AnimatePresence>
@@ -83,12 +83,12 @@ export function VoiceChatbot() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4 bg-black/60 backdrop-blur-sm"
             role="dialog"
             aria-modal="true"
             aria-labelledby="voice-assistant-title"
           >
-            <div className="bg-white w-full max-w-2xl h-[80vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+            <div className="bg-white w-full md:max-w-2xl h-[100dvh] md:h-[80vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
               {/* Header */}
               <div className="bg-[#14B8A6] p-4 flex items-center justify-between text-white">
                 <div className="flex items-center gap-3">
@@ -112,7 +112,7 @@ export function VoiceChatbot() {
               {/* Chat Content */}
               <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50"
+                className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50"
               >
                 {messages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-60">
@@ -167,7 +167,7 @@ export function VoiceChatbot() {
               </div>
 
               {/* Voice Interaction Area */}
-              <div className="p-8 border-t bg-white flex flex-col items-center gap-4">
+              <div className="p-4 md:p-8 border-t bg-white flex flex-col items-center gap-3 md:gap-4">
                 <div className="relative">
                   {/* Pulsating Rings for Different States */}
                   {state !== 'idle' && (
@@ -182,15 +182,15 @@ export function VoiceChatbot() {
                     onClick={toggleListening}
                     disabled={state === 'processing'}
                     className={cn(
-                      "relative w-24 h-24 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 disabled:opacity-50",
+                      "relative w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white shadow-xl transition-all active:scale-95 disabled:opacity-50",
                       getStateColor(state)
                     )}
                     aria-label={isRecording ? "Stop Listening" : "Start Speaking"}
                   >
                     {state === 'processing' ? (
-                      <Loader2 className="w-10 h-10 animate-spin" />
+                      <Loader2 className="w-7 h-7 md:w-10 md:h-10 animate-spin" />
                     ) : (
-                      <Mic className={cn("w-10 h-10", isRecording && "animate-pulse")} />
+                      <Mic className={cn("w-7 h-7 md:w-10 md:h-10", isRecording && "animate-pulse")} />
                     )}
                   </button>
                 </div>

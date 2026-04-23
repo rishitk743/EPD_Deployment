@@ -102,33 +102,33 @@ export function HistoryPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h2 className="text-3xl font-semibold text-[#1F2937] mb-2">
+        <h2 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-1 md:mb-2">
           Your Optimization History
         </h2>
-        <p className="text-[#4B5563]">
+        <p className="text-sm md:text-base text-[#4B5563]">
           Manage and retrieve your AI-optimized resumes for {user.name}
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md hover:shadow-lg transition-shadow">
           <p className="text-sm text-[#4B5563] mb-1 font-medium">Total Analyses</p>
-          <p className="text-3xl font-extrabold text-[#1F2937]">
+          <p className="text-2xl md:text-3xl font-extrabold text-[#1F2937]">
             {historyItems.length}
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md hover:shadow-lg transition-shadow">
           <p className="text-sm text-[#4B5563] mb-1 font-medium">Average Score</p>
-          <p className="text-3xl font-extrabold text-[#1F2937]">
+          <p className="text-2xl md:text-3xl font-extrabold text-[#1F2937]">
             {averageScore}%
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 shadow-md hover:shadow-lg transition-shadow">
           <p className="text-sm text-[#4B5563] mb-1 font-medium">Best Match</p>
-          <p className="text-3xl font-extrabold text-[#16A34A]">
+          <p className="text-2xl md:text-3xl font-extrabold text-[#16A34A]">
             {bestScore}%
           </p>
         </div>
@@ -136,7 +136,7 @@ export function HistoryPage() {
 
       {/* History List */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden">
-        <div className="bg-[#F8F6F2] px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="bg-[#F8F6F2] px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between">
           <h3 className="text-lg font-bold text-[#1F2937]">
             Saved Optimizations
           </h3>
@@ -164,9 +164,9 @@ export function HistoryPage() {
               return (
                 <div
                   key={item.id}
-                  className="p-6 hover:bg-[#F8FBFA] transition-all duration-200 group"
+                  className="p-4 md:p-6 hover:bg-[#F8FBFA] transition-all duration-200 group"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0">
                     <div className="flex items-start gap-5 flex-1">
                       <div className="w-12 h-12 bg-[#F0FDFA] rounded-xl flex items-center justify-center shadow-sm border border-teal-50">
                         <FileText className="w-6 h-6 text-[#0F766E]" />
@@ -203,7 +203,7 @@ export function HistoryPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 ml-4 self-center">
+                    <div className="flex items-center gap-2 sm:ml-4 self-start sm:self-center">
                        <button
                         onClick={() => {
                           const blob = new Blob([item.optimized_resume], { type: "text/plain" });
